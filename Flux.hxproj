@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project version="2">
+  <output>
+    <movie outputType="Application" />
+    <movie input="" />
+    <movie path="project.xml" />
+    <movie fps="30" />
+    <movie width="800" />
+    <movie height="600" />
+    <movie version="3" />
+    <movie minorVersion="0" />
+    <movie platform="NME" />
+    <movie background="#FFFFFF" />
+    <movie preferredSDK=";3;" />
+  </output>
+
+  <classpaths>
+    <class path="Source" />
+  </classpaths>
+
+  <build>
+    <option directives="" />
+    <option flashStrict="False" />
+    <option mainClass="io.fluffy.flux" />
+    <option enabledebug="False" />
+    <option additional="" />
+  </build>
+
+  <haxelib>
+    <library name="openfl" />
+  </haxelib>
+
+  <compileTargets />
+  <library />
+  <hiddenPaths />
+  <preBuildCommand />
+  <postBuildCommand alwaysRun="False" />
+
+  <options>
+    <option showHiddenPaths="False" />
+    <option testMovie="Custom" />
+    <option testMovieCommand="" />
+  </options>
+
+  <storage />
+</project>

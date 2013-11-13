@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<meta title="Flux" package="io.fluffy.flux" version="0.0.1" />
+	<app main="Main" path="Export" file="Flux" />
+	<source path="Source" />
+	<haxelib name="openfl" />
+	<assets path="Assets" rename="assets" exclude="openfl.svg" />
+	<icon path="Assets/openfl.svg" />
+</project>
