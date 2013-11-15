@@ -16,15 +16,17 @@ class Game extends Sprite
     private var tiles: Array <Array < GameTile>>;
 
     private var boxSize: Float;
+    private var selectCol: Int;
+    private var selectRow: Int;
 
     public function new ()
     {
         super ();
 
-        initialize ();
-        construct ();
+        this.initialize ();
+        this.construct ();
 
-        this.tileBox.addEventListener(MouseEvent.CLICK, tilebox_onClick);
+        this.tileBox.addEventListener (MouseEvent.CLICK, tilebox_onClick);
     }
 
     public function resize (newWidth: Int, newHeight: Int): Void
@@ -41,7 +43,7 @@ class Game extends Sprite
 
         for (col in 0...NUM_COLS) {
             for (row in 0...NUM_ROWS) {
-                drawBox (col, row, boxSize);
+                this.drawBox (col, row, boxSize);
 
                 this.tiles[col][row].boxSize = boxSize;
 
@@ -57,7 +59,7 @@ class Game extends Sprite
 
         for (col in 0...NUM_COLS) {
             for (row in 0...NUM_ROWS) {
-                var tile = new GameTile();
+                var tile = new GameTile ();
 
                 tile.col = col;
                 tile.row = row;
@@ -78,11 +80,14 @@ class Game extends Sprite
 
     private function initialize (): Void
     {
-        this.background = new Sprite();
-        this.tileBox    = new Sprite();
+        this.background = new Sprite ();
+        this.tileBox    = new Sprite ();
         this.tiles      = new Array <Array <GameTile>> ();
 
-        this.boxSize            = 0;
+        this.boxSize   = 0;
+        this.selectCol = -1;
+        this.selectRow = -1;
+
         this.tileBox.buttonMode = true;
 
         for (col in 0...NUM_COLS) {
@@ -94,17 +99,65 @@ class Game extends Sprite
         }
     }
 
-    private function tilebox_onClick (event: MouseEvent): Void
+    private function isSwitchable (targetCol: Int, targetRow: Int): Bool
     {
-        var selectCol = Math.floor( event.localX / this.boxSize );
-        var selectRow = Math.floor( event.localY / this.boxSize );
+        if (0 > this.selectCol || 0 > this.selectRow) {
+            return false;
+        }
 
-        for (col in 0...NUM_COLS) {
-            for (row in 0...NUM_ROWS) {
-                this.tiles[col][row].deselect();
+        if (targetCol == this.selectCol) {
+            if (targetRow == this.selectRow - 1 || targetRow == this.selectRow + 1) {
+                return true;
             }
         }
 
-        this.tiles[selectCol][selectRow].select();
+        if (targetRow == this.selectRow) {
+            if (targetCol == this.selectCol - 1 || targetCol == this.selectCol + 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function switchTile (fromCol: Int, fromRow: Int, toCol: Int, toRow: Int): Void
+    {
+        var fromTile = this.tiles[fromCol][fromRow];
+        var toTile   = this.tiles[toCol][toRow];
+
+        fromTile.col = toCol;
+        fromTile.row = toRow;
+        toTile.col   = fromCol;
+        toTile.row   = fromRow;
+
+        this.tiles[fromCol][fromRow] = toTile;
+        this.tiles[toCol][toRow]     = fromTile;
+
+        fromTile.draw ();
+        toTile.draw ();
+    }
+
+    private function tilebox_onClick (event: MouseEvent): Void
+    {
+        var selectCol = Math.floor (event.localX / this.boxSize);
+        var selectRow = Math.floor (event.localY / this.boxSize);
+
+        for (col in 0...NUM_COLS) {
+            for (row in 0...NUM_ROWS) {
+                this.tiles[col][row].deselect ();
+            }
+        }
+
+        if (this.isSwitchable (selectCol, selectRow)) {
+            this.switchTile (this.selectCol, this.selectRow, selectCol, selectRow);
+
+            this.selectCol = -1;
+            this.selectRow = -1;
+        } else {
+            this.tiles[selectCol][selectRow].select ();
+
+            this.selectCol = selectCol;
+            this.selectRow = selectRow;
+        }
     }
 }
