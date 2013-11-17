@@ -1,12 +1,17 @@
 package fluffyflux;
 
 import flash.display.Sprite;
+import flash.events.MouseEvent;
+import flash.text.TextField;
+import flash.text.TextFormat;
+import flash.text.TextFormatAlign;
 
 class GameTile extends Sprite
 {
     public var boxSize: Float;
     public var col: Int;
     public var row: Int;
+    public var type: Int;
 
     private static var COLOR_TYPES = [
         0x0000FF, // blue
@@ -26,14 +31,17 @@ class GameTile extends Sprite
         0x888800,
     ];
 
-    private var type: Int;
     private var selected: Bool;
+    private var typeHint: TextField;
 
     public function new ()
     {
         super ();
 
-        initialize ();
+        this.initialize ();
+        this.construct ();
+
+        this.typeHint.addEventListener (MouseEvent.CLICK, typeHint_onClick );
     }
 
     public function deselect (): Void
@@ -61,6 +69,9 @@ class GameTile extends Sprite
 
         this.graphics.beginFill (COLOR_TYPES[this.type], 0.8);
         this.graphics.drawRect (tileX, tileY, tileSize, tileSize);
+
+        this.typeHint.x = tileX - 6 + tileSize / 2;
+        this.typeHint.y = tileY - 8 + tileSize / 2;
     }
 
     public function select (): Void
@@ -70,6 +81,21 @@ class GameTile extends Sprite
         this.draw ();
     }
 
+    private function construct (): Void
+    {
+        var format   = new TextFormat ("Courier", 12, 0x7A0026);
+        format.align = TextFormatAlign.LEFT;
+
+        this.typeHint.defaultTextFormat = format;
+        this.typeHint.selectable        = false;
+        this.typeHint.text              = Std.string(this.type);
+
+        this.typeHint.height = 16;
+        this.typeHint.width  = 12;
+
+        addChild (this.typeHint);
+    }
+
     private function initialize (): Void
     {
         this.boxSize  = 0;
@@ -77,5 +103,12 @@ class GameTile extends Sprite
         this.row      = 0;
         this.selected = false;
         this.type     = Math.round (Math.random () * (COLOR_TYPES.length - 1));
+
+        this.typeHint = new TextField ();
+    }
+
+    private function typeHint_onClick (event: MouseEvent): Void
+    {
+        event.stopPropagation ();
     }
 }
