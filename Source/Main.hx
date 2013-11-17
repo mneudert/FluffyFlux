@@ -8,9 +8,9 @@ import fluffyflux.Header;
 
 class Main extends Sprite
 {
-    private var background:Sprite;
-    private var game:Game;
-    private var header:Header;
+    private var background: Sprite;
+    private var game: Game;
+    private var header: Header;
 
     public function new ()
     {
@@ -23,7 +23,7 @@ class Main extends Sprite
         stage.addEventListener (Event.RESIZE, stage_onResize);
     }
 
-    private function construct ():Void
+    private function construct (): Void
     {
         addChild (this.background);
 
@@ -34,24 +34,24 @@ class Main extends Sprite
         addChild (this.game);
     }
 
-    private function initialize ():Void
+    private function initialize (): Void
     {
-        this.background = new Sprite();
-        this.game       = new Game();
-        this.header     = new Header();
+        this.background = new Sprite ();
+        this.game       = new Game ();
+        this.header     = new Header ();
     }
 
-    private function resize (newWidth:Int, newHeight:Int):Void
+    private function resize (newWidth: Int, newHeight: Int): Void
     {
         this.background.graphics.beginFill (0xF2F2F2);
         this.background.graphics.drawRect (0, 0, newWidth, newHeight);
 
         this.header.x = newWidth / 2 - this.header.width / 2;
 
-        this.game.resize (newWidth, Std.int(newHeight - this.header.y - this.header.height - 50));
+        this.game.resize (newWidth, Std.int (newHeight - this.header.y - this.header.height - 50));
     }
 
-    private function stage_onResize (event:Event):Void
+    private function stage_onResize (event: Event): Void
     {
         resize (stage.stageWidth, stage.stageHeight);
     }

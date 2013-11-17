@@ -11,15 +11,13 @@ class Game extends Sprite
     private var debug: Debug;
 
     private var background: Sprite;
-    private var game: Game;
-    private var header: Header;
     private var tileBox: Sprite;
 
     private var tiles: Array <Array < GameTile>>;
 
     private var boxSize: Float;
-    private var selectCol: Int;
-    private var selectRow: Int;
+    private var selectedCol: Int;
+    private var selectedRow: Int;
 
     public function new ()
     {
@@ -90,9 +88,9 @@ class Game extends Sprite
         this.tileBox    = new Sprite ();
         this.tiles      = new Array <Array <GameTile>> ();
 
-        this.boxSize   = 0;
-        this.selectCol = -1;
-        this.selectRow = -1;
+        this.boxSize     = 0;
+        this.selectedCol = -1;
+        this.selectedRow = -1;
 
         this.tileBox.buttonMode = true;
 
@@ -107,18 +105,18 @@ class Game extends Sprite
 
     private function isSwitchable (targetCol: Int, targetRow: Int): Bool
     {
-        if (0 > this.selectCol || 0 > this.selectRow) {
+        if (0 > this.selectedCol || 0 > this.selectedRow) {
             return false;
         }
 
-        if (targetCol == this.selectCol) {
-            if (targetRow == this.selectRow - 1 || targetRow == this.selectRow + 1) {
+        if (targetCol == this.selectedCol) {
+            if (targetRow == this.selectedRow - 1 || targetRow == this.selectedRow + 1) {
                 return true;
             }
         }
 
-        if (targetRow == this.selectRow) {
-            if (targetCol == this.selectCol - 1 || targetCol == this.selectCol + 1) {
+        if (targetRow == this.selectedRow) {
+            if (targetCol == this.selectedCol - 1 || targetCol == this.selectedCol + 1) {
                 return true;
             }
         }
@@ -145,10 +143,10 @@ class Game extends Sprite
 
     private function tilebox_onClick (event: MouseEvent): Void
     {
-        var selectCol = Math.floor (event.localX / this.boxSize);
-        var selectRow = Math.floor (event.localY / this.boxSize);
+        var clickedCol = Math.floor (event.localX / this.boxSize);
+        var clickedRow = Math.floor (event.localY / this.boxSize);
 
-        this.debug.text = "BoxClick: " + selectCol + "x" + selectRow;
+        this.debug.text = "BoxClick: " + clickedCol + "x" + clickedRow;
 
         for (col in 0...NUM_COLS) {
             for (row in 0...NUM_ROWS) {
@@ -156,16 +154,18 @@ class Game extends Sprite
             }
         }
 
-        if (this.isSwitchable (selectCol, selectRow)) {
-            this.switchTile (this.selectCol, this.selectRow, selectCol, selectRow);
+        if (this.isSwitchable (clickedCol, clickedRow)) {
+            this.switchTile (this.selectedCol, this.selectedRow, clickedCol, clickedRow);
 
-            this.selectCol = -1;
-            this.selectRow = -1;
-        } else {
-            this.tiles[selectCol][selectRow].select ();
+            this.selectedCol = -1;
+            this.selectedRow = -1;
 
-            this.selectCol = selectCol;
-            this.selectRow = selectRow;
+            return;
         }
+
+        this.tiles[clickedCol][clickedRow].select ();
+
+        this.selectedCol = clickedCol;
+        this.selectedRow = clickedRow;
     }
 }

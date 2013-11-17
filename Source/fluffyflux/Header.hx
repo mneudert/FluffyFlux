@@ -14,10 +14,10 @@ class Header extends Sprite
         construct ();
     }
 
-    private function construct ():Void
+    private function construct (): Void
     {
-        var textField = new TextField();
-        var format    = new TextFormat("Arial", 20, 0x7A0026);
+        var textField = new TextField ();
+        var format    = new TextFormat ("Arial", 20, 0x7A0026);
 
         format.align = TextFormatAlign.CENTER;
 
