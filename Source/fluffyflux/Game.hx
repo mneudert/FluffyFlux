@@ -8,6 +8,8 @@ class Game extends Sprite
     private static var NUM_COLS = 9;
     private static var NUM_ROWS = 9;
 
+    private var debug: Debug;
+
     private var background: Sprite;
     private var game: Game;
     private var header: Header;
@@ -54,6 +56,8 @@ class Game extends Sprite
 
     private function construct (): Void
     {
+        addChild (this.debug);
+
         addChild (this.background);
         addChild (this.tileBox);
 
@@ -80,6 +84,8 @@ class Game extends Sprite
 
     private function initialize (): Void
     {
+        this.debug      = new Debug ();
+
         this.background = new Sprite ();
         this.tileBox    = new Sprite ();
         this.tiles      = new Array <Array <GameTile>> ();
@@ -141,6 +147,8 @@ class Game extends Sprite
     {
         var selectCol = Math.floor (event.localX / this.boxSize);
         var selectRow = Math.floor (event.localY / this.boxSize);
+
+        this.debug.text = "BoxClick: " + selectCol + "x" + selectRow;
 
         for (col in 0...NUM_COLS) {
             for (row in 0...NUM_ROWS) {
