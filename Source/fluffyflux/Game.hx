@@ -3,6 +3,8 @@ package fluffyflux;
 import flash.display.Sprite;
 import flash.events.MouseEvent;
 
+import fluffyflux.util.RevIntIterator;
+
 class Game extends Sprite
 {
     private static var NUM_COLS = 9;
@@ -26,7 +28,7 @@ class Game extends Sprite
         this.initialize ();
         this.construct ();
 
-        this.tileBox.addEventListener (MouseEvent.CLICK, tilebox_onClick);
+        this.tileBox.addEventListener (MouseEvent.CLICK, tileBox_onClick);
     }
 
     public function resize (newWidth: Int, newHeight: Int): Void
@@ -103,6 +105,56 @@ class Game extends Sprite
         }
     }
 
+    private function hasMatches (tileType: Int, targetCol: Int, targetRow: Int): Bool
+    {
+        var hMatchLeft   = 0;
+        var hMatchRight  = 0;
+        var vMatchBottom = 0;
+        var vMatchTop    = 0;
+
+        if (1 < targetCol) {
+            for (col in new RevIntIterator(targetCol, 0)) {
+                if (tileType != this.tiles[col - 1][targetRow].type) {
+                    break;
+                }
+
+                hMatchLeft++;
+            }
+        }
+
+        if (NUM_COLS > targetCol + 1) {
+            for (col in new IntIterator(targetCol + 1, NUM_COLS)) {
+                if (tileType != this.tiles[col][targetRow].type) {
+                    break;
+                }
+
+                hMatchRight++;
+            }
+        }
+
+        if (1 < targetRow) {
+            for (row in new RevIntIterator(targetRow, 0)) {
+                if (tileType != this.tiles[targetCol][row - 1].type) {
+                    break;
+                }
+
+                vMatchTop++;
+            }
+        }
+
+        if (NUM_ROWS > targetRow + 1) {
+            for (row in new IntIterator(targetRow + 1, NUM_ROWS)) {
+                if (tileType != this.tiles[targetCol][row].type) {
+                    break;
+                }
+
+                vMatchBottom++;
+            }
+        }
+
+        return (2 <= hMatchLeft + hMatchRight) || (2 <= vMatchBottom + vMatchTop);
+    }
+
     private function isSwitchable (targetCol: Int, targetRow: Int): Bool
     {
         if (0 > this.selectedCol || 0 > this.selectedRow) {
@@ -141,7 +193,7 @@ class Game extends Sprite
         toTile.draw ();
     }
 
-    private function tilebox_onClick (event: MouseEvent): Void
+    private function tileBox_onClick (event: MouseEvent): Void
     {
         var clickedCol = Math.floor (event.localX / this.boxSize);
         var clickedRow = Math.floor (event.localY / this.boxSize);
@@ -155,12 +207,20 @@ class Game extends Sprite
         }
 
         if (this.isSwitchable (clickedCol, clickedRow)) {
+            var selectedType = this.tiles[this.selectedCol][this.selectedRow].type;
+            var clickedType  = this.tiles[clickedCol][clickedRow].type;
+
             this.switchTile (this.selectedCol, this.selectedRow, clickedCol, clickedRow);
 
-            this.selectedCol = -1;
-            this.selectedRow = -1;
+            if (!hasMatches (selectedType, clickedCol, clickedRow)
+                    && !hasMatches (clickedType, this.selectedCol, this.selectedRow)) {
+                this.switchTile (this.selectedCol, this.selectedRow, clickedCol, clickedRow);
 
-            return;
+                this.selectedCol = -1;
+                this.selectedRow = -1;
+
+                return;
+            }
         }
 
         this.tiles[clickedCol][clickedRow].select ();

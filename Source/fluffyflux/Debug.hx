@@ -17,5 +17,8 @@ class Debug extends TextField
     {
         this.defaultTextFormat = new TextFormat ("Courier", 16, 0x7A0026);
         this.selectable        = false;
+
+        this.width  = 300;
+        this.height = 500;
     }
 }
