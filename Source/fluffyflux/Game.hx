@@ -45,13 +45,29 @@ class Game extends Sprite
 
         for (col in 0...NUM_COLS) {
             for (row in 0...NUM_ROWS) {
-                this.drawBox (col, row, boxSize);
+                this.drawBox (col, row, this.boxSize);
 
-                this.tiles[col][row].boxSize = boxSize;
+                this.tiles[col][row].boxSize = this.boxSize;
 
                 this.tiles[col][row].draw ();
             }
         }
+    }
+
+    private function addTile (col: Int, row: Int): Void
+    {
+        var tile = new GameTile ();
+
+        tile.boxSize = this.boxSize;
+        tile.col     = col;
+        tile.row     = row;
+
+        this.tiles[col][row] = tile;
+
+        this.tileBox.addChild (tile);
+
+        tile.resetType ();
+        tile.draw ();
     }
 
     private function clearMatches (clearCol: Int, clearRow: Int): Void
@@ -105,18 +121,12 @@ class Game extends Sprite
 
         for (col in 0...NUM_COLS) {
             for (row in 0...NUM_ROWS) {
-                var tile = new GameTile ();
+                this.addTile (col, row);
 
-                tile.col = col;
-                tile.row = row;
-
-                this.tiles[col][row] = tile;
-
-                do {
-                    tile.resetType ();
-                } while (hasMatches (col, row));
-
-                this.tileBox.addChild (tile);
+                while (hasMatches (col, row)) {
+                    this.tiles[col][row].resetType ();
+                    this.tiles[col][row].draw ();
+                }
             }
         }
     }
@@ -234,6 +244,76 @@ class Game extends Sprite
         return false;
     }
 
+    private function refillCleared (): Void
+    {
+        for (col in 0...NUM_COLS) {
+            for (row in new RevIntIterator (NUM_ROWS - 1, -1)) {
+                if (null != this.tiles[col][row]) {
+                    continue;
+                }
+
+                refillClearedPart (col, row);
+                break;
+            }
+        }
+    }
+
+    private function refillClearedPart (refillCol: Int, refillRow: Int): Void
+    {
+        var amount = 0;
+
+        for (row in new RevIntIterator (refillRow, -1)) {
+            if (null != this.tiles[refillCol][row]) {
+                break;
+            }
+
+            amount++;
+        }
+
+        if (amount <= refillRow) { // full clear at "amount == refillRow + 1"
+            for (row in new RevIntIterator (refillRow - amount, -1)) {
+                var tile = this.tiles[refillCol][row];
+
+                tile.row = row + amount;
+
+                this.tiles[refillCol][row]          = null;
+                this.tiles[refillCol][row + amount] = tile;
+
+                tile.draw ();
+            }
+        }
+
+        for (row in 0...amount) {
+            this.addTile (refillCol, row);
+        }
+    }
+
+    private function refillMatches (): Void
+    {
+        var redo: Bool;
+
+        do {
+            redo = false;
+
+            this.refillCleared ();
+
+            for (col in 0...NUM_COLS) {
+                for (row in 0...NUM_ROWS) {
+                    if (hasMatches (col, row)) {
+                        this.clearMatches (col, row);
+
+                        redo = true;
+                        break;
+                    }
+                }
+
+                if (redo) {
+                    break;
+                }
+            }
+        } while (redo);
+    }
+
     private function switchTile (fromCol: Int, fromRow: Int, toCol: Int, toRow: Int): Void
     {
         var fromTile = this.tiles[fromCol][fromRow];
@@ -285,6 +365,8 @@ class Game extends Sprite
             if (hasSelectedMatches) {
                 this.clearMatches (this.selectedCol, this.selectedRow);
             }
+
+            this.refillMatches ();
 
             this.selectedCol = -1;
             this.selectedRow = -1;
