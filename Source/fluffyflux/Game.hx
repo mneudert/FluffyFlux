@@ -54,6 +54,48 @@ class Game extends Sprite
         }
     }
 
+    private function clearMatches (clearCol: Int, clearRow: Int): Void
+    {
+        var tileType = this.tiles[clearCol][clearRow].type;
+        var matches  = this.findMatches (tileType, clearCol, clearRow);
+
+        if (0 < matches.hAsc) {
+            for (col in new IntIterator (clearCol + 1, clearCol + matches.hAsc + 1)) {
+                this.tileBox.removeChild (this.tiles[col][clearRow]);
+
+                this.tiles[col][clearRow] = null;
+            }
+        }
+
+        if (0 < matches.hDesc) {
+            for (col in new RevIntIterator (clearCol - 1, clearCol - matches.hDesc - 1)) {
+                this.tileBox.removeChild (this.tiles[col][clearRow]);
+
+                this.tiles[col][clearRow] = null;
+            }
+        }
+
+        if (0 < matches.vAsc) {
+            for (row in new IntIterator (clearRow + 1, clearRow + matches.vAsc + 1)) {
+                this.tileBox.removeChild (this.tiles[clearCol][row]);
+
+                this.tiles[clearCol][row] = null;
+            }
+        }
+
+        if (0 < matches.vDesc) {
+            for (row in new RevIntIterator (clearRow - 1, clearRow - matches.vDesc - 1)) {
+                this.tileBox.removeChild (this.tiles[clearCol][row]);
+
+                this.tiles[clearCol][row] = null;
+            }
+        }
+
+        this.tileBox.removeChild (this.tiles[clearCol][clearRow]);
+
+        this.tiles[clearCol][clearRow] = null;
+    }
+
     private function construct (): Void
     {
         addChild (this.debug);
@@ -72,7 +114,7 @@ class Game extends Sprite
 
                 do {
                     tile.resetType ();
-                } while (hasMatches (tile.type, col, row));
+                } while (hasMatches (col, row));
 
                 this.tileBox.addChild (tile);
             }
@@ -84,6 +126,68 @@ class Game extends Sprite
         this.background.graphics.lineStyle (2, 0x444444);
         this.background.graphics.beginFill (0xFFFFFF, 0.4);
         this.background.graphics.drawRect (col * boxSize, row * boxSize, boxSize, boxSize);
+    }
+
+    private function findMatches (tileType: Int, targetCol: Int, targetRow: Int)
+    {
+        var hMatchLeft   = 0;
+        var hMatchRight  = 0;
+        var vMatchBottom = 0;
+        var vMatchTop    = 0;
+
+        if (1 < targetCol) {
+            for (col in new RevIntIterator (targetCol - 1, -1)) {
+                if ((null == this.tiles[col][targetRow])
+                        || (tileType != this.tiles[col][targetRow].type)) {
+                    break;
+                }
+
+                hMatchLeft++;
+            }
+        }
+
+        if (NUM_COLS > targetCol + 1) {
+            for (col in new IntIterator (targetCol + 1, NUM_COLS)) {
+                if ((null == this.tiles[col][targetRow])
+                        || (tileType != this.tiles[col][targetRow].type)) {
+                    break;
+                }
+
+                hMatchRight++;
+            }
+        }
+
+        if (1 < targetRow) {
+            for (row in new RevIntIterator (targetRow - 1, -1)) {
+                if ((null == this.tiles[targetCol][row])
+                        || (tileType != this.tiles[targetCol][row].type)) {
+                    break;
+                }
+
+                vMatchTop++;
+            }
+        }
+
+        if (NUM_ROWS > targetRow + 1) {
+            for (row in new IntIterator (targetRow + 1, NUM_ROWS)) {
+                if ((null == this.tiles[targetCol][row])
+                        || (tileType != this.tiles[targetCol][row].type)) {
+                    break;
+                }
+
+                vMatchBottom++;
+            }
+        }
+
+        return { hAsc: hMatchRight, hDesc: hMatchLeft, vAsc: vMatchBottom, vDesc: vMatchTop };
+    }
+
+    private function hasMatches (targetCol: Int, targetRow: Int): Bool
+    {
+        var tileType = this.tiles[targetCol][targetRow].type;
+        var matches  = this.findMatches (tileType, targetCol, targetRow);
+
+        return (2 <= matches.hAsc + matches.hDesc) || (2 <= matches.vAsc + matches.vDesc);
     }
 
     private function initialize (): Void
@@ -107,60 +211,6 @@ class Game extends Sprite
                 this.tiles[col][row] = null;
             }
         }
-    }
-
-    private function hasMatches (tileType: Int, targetCol: Int, targetRow: Int): Bool
-    {
-        var hMatchLeft   = 0;
-        var hMatchRight  = 0;
-        var vMatchBottom = 0;
-        var vMatchTop    = 0;
-
-        if (1 < targetCol) {
-            for (col in new RevIntIterator(targetCol, 0)) {
-                if ((null == this.tiles[col - 1][targetRow])
-                        || (tileType != this.tiles[col - 1][targetRow].type)) {
-                    break;
-                }
-
-                hMatchLeft++;
-            }
-        }
-
-        if (NUM_COLS > targetCol + 1) {
-            for (col in new IntIterator(targetCol + 1, NUM_COLS)) {
-                if ((null == this.tiles[col][targetRow])
-                        || (tileType != this.tiles[col][targetRow].type)) {
-                    break;
-                }
-
-                hMatchRight++;
-            }
-        }
-
-        if (1 < targetRow) {
-            for (row in new RevIntIterator(targetRow, 0)) {
-                if ((null == this.tiles[targetCol][row - 1])
-                        || (tileType != this.tiles[targetCol][row - 1].type)) {
-                    break;
-                }
-
-                vMatchTop++;
-            }
-        }
-
-        if (NUM_ROWS > targetRow + 1) {
-            for (row in new IntIterator(targetRow + 1, NUM_ROWS)) {
-                if ((null == this.tiles[targetCol][row])
-                        || (tileType != this.tiles[targetCol][row].type)) {
-                    break;
-                }
-
-                vMatchBottom++;
-            }
-        }
-
-        return (2 <= hMatchLeft + hMatchRight) || (2 <= vMatchBottom + vMatchTop);
     }
 
     private function isSwitchable (targetCol: Int, targetRow: Int): Bool
@@ -210,25 +260,36 @@ class Game extends Sprite
 
         for (col in 0...NUM_COLS) {
             for (row in 0...NUM_ROWS) {
+                if (null == this.tiles[col][row]) {
+                    continue;
+                }
+
                 this.tiles[col][row].deselect ();
             }
         }
 
         if (this.isSwitchable (clickedCol, clickedRow)) {
-            var selectedType = this.tiles[this.selectedCol][this.selectedRow].type;
-            var clickedType  = this.tiles[clickedCol][clickedRow].type;
-
             this.switchTile (this.selectedCol, this.selectedRow, clickedCol, clickedRow);
 
-            if (!hasMatches (selectedType, clickedCol, clickedRow)
-                    && !hasMatches (clickedType, this.selectedCol, this.selectedRow)) {
+            var hasClickedMatches  = hasMatches (clickedCol, clickedRow);
+            var hasSelectedMatches = hasMatches (this.selectedCol, this.selectedRow);
+
+            if (!hasClickedMatches && !hasSelectedMatches) {
                 this.switchTile (this.selectedCol, this.selectedRow, clickedCol, clickedRow);
-
-                this.selectedCol = -1;
-                this.selectedRow = -1;
-
-                return;
             }
+
+            if (hasClickedMatches) {
+                this.clearMatches (clickedCol, clickedRow);
+            }
+
+            if (hasSelectedMatches) {
+                this.clearMatches (this.selectedCol, this.selectedRow);
+            }
+
+            this.selectedCol = -1;
+            this.selectedRow = -1;
+
+            return;
         }
 
         this.tiles[clickedCol][clickedRow].select ();
