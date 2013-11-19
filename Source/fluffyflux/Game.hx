@@ -70,6 +70,10 @@ class Game extends Sprite
 
                 this.tiles[col][row] = tile;
 
+                do {
+                    tile.resetType ();
+                } while (hasMatches (tile.type, col, row));
+
                 this.tileBox.addChild (tile);
             }
         }
@@ -114,7 +118,8 @@ class Game extends Sprite
 
         if (1 < targetCol) {
             for (col in new RevIntIterator(targetCol, 0)) {
-                if (tileType != this.tiles[col - 1][targetRow].type) {
+                if ((null == this.tiles[col - 1][targetRow])
+                        || (tileType != this.tiles[col - 1][targetRow].type)) {
                     break;
                 }
 
@@ -124,7 +129,8 @@ class Game extends Sprite
 
         if (NUM_COLS > targetCol + 1) {
             for (col in new IntIterator(targetCol + 1, NUM_COLS)) {
-                if (tileType != this.tiles[col][targetRow].type) {
+                if ((null == this.tiles[col][targetRow])
+                        || (tileType != this.tiles[col][targetRow].type)) {
                     break;
                 }
 
@@ -134,7 +140,8 @@ class Game extends Sprite
 
         if (1 < targetRow) {
             for (row in new RevIntIterator(targetRow, 0)) {
-                if (tileType != this.tiles[targetCol][row - 1].type) {
+                if ((null == this.tiles[targetCol][row - 1])
+                        || (tileType != this.tiles[targetCol][row - 1].type)) {
                     break;
                 }
 
@@ -144,7 +151,8 @@ class Game extends Sprite
 
         if (NUM_ROWS > targetRow + 1) {
             for (row in new IntIterator(targetRow + 1, NUM_ROWS)) {
-                if (tileType != this.tiles[targetCol][row].type) {
+                if ((null == this.tiles[targetCol][row])
+                        || (tileType != this.tiles[targetCol][row].type)) {
                     break;
                 }
 

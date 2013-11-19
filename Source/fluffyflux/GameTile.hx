@@ -74,6 +74,12 @@ class GameTile extends Sprite
         this.typeHint.y = tileY - 8 + tileSize / 2;
     }
 
+    public function resetType (): Void
+    {
+        this.type          = Math.round (Math.random () * (COLOR_TYPES.length - 1));
+        this.typeHint.text = Std.string (this.type);
+    }
+
     public function select (): Void
     {
         this.selected = true;
@@ -88,7 +94,6 @@ class GameTile extends Sprite
 
         this.typeHint.defaultTextFormat = format;
         this.typeHint.selectable        = false;
-        this.typeHint.text              = Std.string(this.type);
 
         this.typeHint.height = 16;
         this.typeHint.width  = 12;
@@ -102,8 +107,6 @@ class GameTile extends Sprite
         this.col      = 0;
         this.row      = 0;
         this.selected = false;
-        this.type     = Math.round (Math.random () * (COLOR_TYPES.length - 1));
-
         this.typeHint = new TextField ();
     }
 
