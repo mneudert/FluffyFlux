@@ -13,6 +13,7 @@ class Game extends Sprite
     private var debug: Debug;
 
     private var background: Sprite;
+    private var points: GamePoints;
     private var tileBox: Sprite;
 
     private var tiles: Array <Array < GameTile>>;
@@ -33,12 +34,16 @@ class Game extends Sprite
 
     public function resize (newWidth: Int, newHeight: Int): Void
     {
-        var sideLength = (newHeight < newWidth) ? newHeight : newWidth;
+        var gameHeight = Std.int (newHeight - this.points.height - 50);
+        var sideLength = (gameHeight < newWidth) ? gameHeight : newWidth;
 
         this.boxSize = sideLength / NUM_COLS;
 
         this.background.graphics.clear ();
         this.background.x = newWidth / 2 - sideLength / 2;
+
+        this.points.x = newWidth / 2 - this.points.width / 2;
+        this.points.y = gameHeight + 25;
 
         this.tileBox.x = this.background.x;
         this.tileBox.y = this.background.y;
@@ -118,6 +123,7 @@ class Game extends Sprite
 
         addChild (this.background);
         addChild (this.tileBox);
+        addChild (this.points);
 
         for (col in 0...NUM_COLS) {
             for (row in 0...NUM_ROWS) {
@@ -205,6 +211,7 @@ class Game extends Sprite
         this.debug      = new Debug ();
 
         this.background = new Sprite ();
+        this.points     = new GamePoints ();
         this.tileBox    = new Sprite ();
         this.tiles      = new Array <Array <GameTile>> ();
 
@@ -244,21 +251,25 @@ class Game extends Sprite
         return false;
     }
 
-    private function refillCleared (): Void
+    private function refillCleared (): Int
     {
+        var amount = 0;
+
         for (col in 0...NUM_COLS) {
             for (row in new RevIntIterator (NUM_ROWS - 1, -1)) {
                 if (null != this.tiles[col][row]) {
                     continue;
                 }
 
-                refillClearedPart (col, row);
+                amount += refillClearedPart (col, row);
                 break;
             }
         }
+
+        return amount;
     }
 
-    private function refillClearedPart (refillCol: Int, refillRow: Int): Void
+    private function refillClearedPart (refillCol: Int, refillRow: Int): Int
     {
         var amount = 0;
 
@@ -286,16 +297,24 @@ class Game extends Sprite
         for (row in 0...amount) {
             this.addTile (refillCol, row);
         }
+
+        return amount;
     }
 
     private function refillMatches (): Void
     {
+        var cleared: Int;
         var redo: Bool;
 
-        do {
-            redo = false;
+        var multiplier = 0;
 
-            this.refillCleared ();
+        do {
+            multiplier++;
+
+            redo    = false;
+            cleared = this.refillCleared ();
+
+            this.points.addPoints ( cleared * (20 * multiplier));
 
             for (col in 0...NUM_COLS) {
                 for (row in 0...NUM_ROWS) {
